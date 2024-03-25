@@ -1,5 +1,5 @@
 # Deploy Fuel Node
-Join the Fuel Network, a high-performance blockchain designed for scalable decentralized applications and financial transactions. With its unique architecture, Fuel aims to offer fast transaction processing and low fees, making it an ideal platform for developers and users alike.
+what is the fuel network project? Fuel initially describes itself as the first Optimistic rollup for Ethereum launched in 2020. Since then the project has come a long way and is a modular execution layer offering smart contracts on Ethereum using the UTXO model.
 
 ## Prerequisites
 Linux Ubuntu 22.04 LTS
@@ -47,7 +47,7 @@ ansible-playbook fuel-node.yml -e node_action="install"
 Ensure you run the playbook with root privileges.
 
 ##  Managing the Fuel Node Service
-```
+
 ### Starting Services
 
 After initialization, you can start the Fuel node service with:
