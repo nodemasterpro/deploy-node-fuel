@@ -15,6 +15,7 @@
 
   vars:
     p2p_secret_path: "/root/fuel/p2p_secret"
+    home_fuel: "/root/fuel"
     chain_config_path: "/root/fuel/chainConfig.json"
     db_path: "/root/fuel/.fuel_beta5"
     fuel_bin_path: "/root/.fuelup/bin"
@@ -50,6 +51,12 @@
             path: /root/.profile
             line: 'export PATH=$PATH:{{ fuel_bin_path }}'
             create: yes
+
+        - name: Create DB directory
+          file:
+            path: "{{ home_fuel }}"
+            state: directory
+            mode: '0755'
 
         - name: Generate P2P secret key
           shell: export PATH=$PATH:{{ fuel_bin_path }} && fuel-core-keygen new --key-type peering > {{ p2p_secret_path }}
