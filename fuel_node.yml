@@ -42,8 +42,6 @@
         - name: Install Fuel toolchain without expect
           shell: |
           curl https://install.fuel.network | sh
-          args:
-            executable: /bin/bash
 
         - name: Add Fuel toolchain to PATH permanently
           lineinfile:
