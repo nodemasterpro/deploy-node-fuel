@@ -34,15 +34,14 @@
             name: expect
             state: present
   
-
-        - name: Install Fuel toolchain with expect
+        - name: Remove existing .fuelup directory
+          file:
+            path: "/root/.fuelup"
+            state: absent
+ 
+        - name: Install Fuel toolchain without expect
           shell: |
-            expect -c '
-            spawn curl https://install.fuel.network | sh
-            expect "Would you like fuelup-init to modify your PATH variable for you? (N/y)"
-            send "y\r"
-            interact
-            '
+          curl https://install.fuel.network | sh
           args:
             executable: /bin/bash
 
