@@ -39,9 +39,11 @@
             path: "/root/.fuelup"
             state: absent
  
-        - name: Install Fuel toolchain without expect
+        - name: Install Fuel toolchain without interactive prompt
           shell: |
-            curl https://install.fuel.network | sh
+             curl https://install.fuel.network | sh -s -- --no-modify-path
+          args:
+             executable: /bin/bash
 
         - name: Add Fuel toolchain to PATH permanently
           lineinfile:
