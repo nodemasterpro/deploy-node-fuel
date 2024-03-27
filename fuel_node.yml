@@ -33,6 +33,11 @@
           apt:
             name: expect
             state: present
+
+        - name: Ensure jq is installed
+          apt:
+            name: jq
+            state: present    
   
         - name: Remove existing .fuelup directory
           file:
