@@ -86,4 +86,4 @@
         daemon_reload: yes
         name: fuel-node
         enabled: yes
-        state: started
+        state: stopped
