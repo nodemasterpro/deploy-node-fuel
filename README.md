@@ -42,9 +42,10 @@ cd deploy-node-fuel
 Launch the installation with the following command, which prompts you for the action to perform (install or remove), the service name for the Fuel node, and your Alchemy Ethereum RPC endpoint:
 
 ```
-ansible-playbook fuel-node.yml -e node_action="install"
+ansible-playbook install-fuel-node.yml
 ```
 Ensure you run the playbook with root privileges.
+
 
 ##  Managing the Fuel Node Service
 
@@ -74,6 +75,6 @@ sudo systemctl stop fuel-node
 To remove the Fuel node, simply run the playbook again and choose the remove option:
 
 ```
-ansible-playbook setup_or_remove_fuel_node.yml -e node_action="remove"
+ansible-playbook remove_fuel_node.yml
 ```
 

@@ -1,0 +1,31 @@
+---
+- name: Remove Fuel Node
+  hosts: localhost
+  become: true
+
+  vars:
+    p2p_secret_path: "/root/fuel/p2p_secret"
+    chain_config_folder: "/root/fuel/chain-configuration"
+    db_path: "/root/fuel/.fuel-sepolia-testnet"
+
+  tasks:
+    - name: Stop and disable Fuel node service
+      systemd:
+        name: fuel-node
+        state: stopped
+        enabled: no
+
+    - name: Remove Fuel node service file
+      file:
+        path: /etc/systemd/system/fuel-node.service
+        state: absent
+
+    - name: Remove chain configuration and data directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ db_path }}"
+        - "{{ chain_config_folder }}"
+        - "{{ p2p_secret_path }}"
+      ignore_errors: true

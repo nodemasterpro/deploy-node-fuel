@@ -3,23 +3,24 @@ Description=Fuel Node Service
 After=network.target
 
 [Service]
-User=root
-ExecStart=/root/.fuelup/bin/fuel-core run \
-  --service-name {{ service_name }} \
+Type=simple
+ExecStart={{ fuel_bin_path }}/fuel-core run \
+  --service-name=fuel-sepolia-testnet-node \
   --keypair {{ p2p_secret.stdout }} \
   --relayer {{ eth_rpc_endpoint }} \
-  --ip 0.0.0.0 --port 4001 --peering-port 30333 \
-  --db-path {{ db_path }} \
+  --ip=0.0.0.0 --port=4000 --peering-port=30333 \
+  --db-path={{ db_path }} \
+  --snapshot {{ chain_config_folder }}/ignition \
   --utxo-validation --poa-instant false --enable-p2p \
-  --min-gas-price 1 --max-block-size 18874368  --max-transmit-size 18874368 \
-  --reserved-nodes /dns4/p2p-beta-5.fuel.network/tcp/30333/p2p/16Uiu2HAmSMqLSibvGCvg8EFLrpnmrXw1GZ2ADX3U2c9ttQSvFtZX,/dns4/p2p-beta-5.fuel.network/tcp/30334/p2p/16Uiu2HAmVUHZ3Yimoh4fBbFqAb3AC4QR1cyo8bUF4qyi8eiUjpVP \
+  --reserved-nodes /dns4/p2p-testnet.fuel.network/tcp/30333/p2p/16Uiu2HAmDxoChB7AheKNvCVpD4PHJwuDGn8rifMBEHmEynGHvHrf \
   --sync-header-batch-size 100 \
   --enable-relayer \
-  --relayer-v2-listening-contracts 0x557c5cE22F877d975C2cB13D0a961a182d740fD5 \
-  --relayer-da-deploy-height 4867877 \
-  --relayer-log-page-size 2000
-Restart=on-failure
-RestartSec=5s
+  --relayer-v2-listening-contracts=0x01855B78C1f8868DE70e84507ec735983bf262dA \
+  --relayer-da-deploy-height=5827607 \
+  --relayer-log-page-size=500 \
+  --sync-block-stream-buffer-size 30
+Restart=always
+User=root
 
 [Install]
 WantedBy=multi-user.target

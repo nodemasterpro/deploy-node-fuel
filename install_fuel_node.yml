@@ -1,0 +1,89 @@
+---
+- name: Install Fuel Node
+  hosts: localhost
+  become: true
+  vars_prompt:
+    - name: eth_rpc_endpoint
+      prompt: "Enter your Alchemy Ethereum RPC endpoint (Sepolia)"
+      private: no
+
+  vars:
+    p2p_secret_path: "/root/fuel/p2p_secret"
+    home_fuel: "/root/fuel"
+    chain_config_repo: "https://github.com/FuelLabs/chain-configuration"
+    chain_config_folder: "/root/fuel/chain-configuration"
+    db_path: "/root/fuel/.fuel-sepolia-testnet"
+    fuel_bin_path: "/root/.fuelup/bin"
+
+  tasks:
+    - name: Install Rust and Cargo
+      shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        source $HOME/.cargo/env
+      args:
+        executable: /bin/bash
+
+    - name: Ensure expect is installed
+      apt:
+        name: expect
+        state: present
+
+    - name: Ensure jq is installed
+      apt:
+        name: jq
+        state: present    
+
+    - name: Remove existing .fuelup directory
+      file:
+        path: "/root/.fuelup"
+        state: absent
+
+    - name: Install Fuel toolchain without interactive prompt
+      shell: |
+         curl https://install.fuel.network | sh -s -- --no-modify-path
+      args:
+         executable: /bin/bash
+
+    - name: Add Fuel toolchain to PATH permanently
+      lineinfile:
+        path: /root/.profile
+        line: 'export PATH=$PATH:{{ fuel_bin_path }}'
+        create: yes
+
+    - name: Create necessary directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ home_fuel }}"
+        - "{{ db_path }}"
+
+    - name: Generate P2P secret key
+      shell: export PATH=$PATH:{{ fuel_bin_path }} && fuel-core-keygen new --key-type peering > {{ p2p_secret_path }}
+      args:
+        creates: "{{ p2p_secret_path }}"
+        executable: /bin/bash
+
+    - name: Read P2P secret key
+      shell: cat {{ p2p_secret_path }} | jq -r '.secret'
+      register: p2p_secret
+      changed_when: false
+
+    - name: Clone chain configuration repository
+      git:
+        repo: "{{ chain_config_repo }}"
+        dest: "{{ chain_config_folder }}"
+        update: yes
+
+    - name: Create Fuel node service
+      template:
+        src: templates/fuel-node.service.j2
+        dest: /etc/systemd/system/fuel-node.service
+
+    - name: Reload systemd, enable and start Fuel node service
+      systemd:
+        daemon_reload: yes
+        name: fuel-node
+        enabled: yes
+        state: started
