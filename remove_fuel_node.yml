@@ -14,11 +14,20 @@
         name: fuel-node
         state: stopped
         enabled: no
+      ignore_errors: true
+  
 
     - name: Remove Fuel node service file
       file:
         path: /etc/systemd/system/fuel-node.service
         state: absent
+
+    - name: Remove Fuel binary
+      file:
+        path: /root/.fuelup
+        state: absent    
+      ignore_errors: true
+  
 
     - name: Remove chain configuration and data directories
       file:
