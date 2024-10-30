@@ -1,0 +1,100 @@
+---
+- name: Install Fuel Node Mainnet
+  hosts: localhost
+  become: true
+  vars_prompt:
+    - name: eth_rpc_endpoint
+      prompt: "Entrez votre endpoint RPC Ethereum Mainnet Alchemy"
+      private: no
+
+  vars:
+    p2p_secret_path: "/root/fuel/p2p_secret"
+    home_fuel: "/root/fuel"
+    chain_config_repo: "https://github.com/FuelLabs/chain-configuration"
+    chain_config_folder: "/root/fuel/chain-configuration"
+    db_path: "/root/.fuel-mainnet"
+    fuel_bin_path: "/root/.fuelup/bin"
+
+  tasks:
+    - name: Update and upgrade system
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Install required packages
+      apt:
+        name: 
+          - curl
+          - git
+          - expect
+          - jq
+        state: present
+
+    - name: Set file descriptor limit
+      pam_limits:
+        domain: '*'
+        limit_type: soft
+        limit_item: nofile
+        value: 32768
+
+    - name: Install Rust and Cargo
+      shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        source $HOME/.cargo/env
+      args:
+        executable: /bin/bash
+
+    - name: Remove existing .fuelup directory
+      file:
+        path: "/root/.fuelup"
+        state: absent
+
+    - name: Install Fuel toolchain without interactive prompt
+      shell: |
+         curl https://install.fuel.network | sh -s -- --no-modify-path
+      args:
+         executable: /bin/bash
+
+    - name: Add Fuel toolchain to PATH permanently
+      lineinfile:
+        path: /root/.profile
+        line: 'export PATH=$PATH:{{ fuel_bin_path }}'
+        create: yes
+
+    - name: Create necessary directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ home_fuel }}"
+        - "{{ db_path }}"
+
+    - name: Generate P2P secret key
+      shell: export PATH=$PATH:{{ fuel_bin_path }} && fuel-core-keygen new --key-type peering > {{ p2p_secret_path }}
+      args:
+        creates: "{{ p2p_secret_path }}"
+        executable: /bin/bash
+
+    - name: Read P2P secret key
+      shell: cat {{ p2p_secret_path }} | jq -r '.secret'
+      register: p2p_secret
+      changed_when: false
+
+    - name: Clone chain configuration repository
+      git:
+        repo: "{{ chain_config_repo }}"
+        dest: "{{ chain_config_folder }}"
+        update: yes
+
+    - name: Create Fuel node service
+      template:
+        src: templates/fuel-node-mainnet.service.j2
+        dest: /etc/systemd/system/fuel-node.service
+
+    - name: Reload systemd, enable and start Fuel node service
+      systemd:
+        daemon_reload: yes
+        name: fuel
+        enabled: yes
+        state: started 
